@@ -1,0 +1,38 @@
+{
+    "name": "eelcol/laravel-html-dom",
+    "description": "Laravel HTML Dom implementation",
+    "keywords": ["laravel", "html","dom"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eelco Luurtsema",
+            "email": "eelcoluurtsema@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.3.0",
+        "illuminate/support": "^8",
+        "illuminate/database": "^8"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.0",
+        "phpunit/phpunit": "^9.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Eelcol\\LaravelHtmlDom\\": "src/" 
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Eelcol\\LaravelHtmlDom\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Eelcol\\LaravelHtmlDom\\HtmlDomServiceProvider"
+            ]
+         }
+     }
+}
