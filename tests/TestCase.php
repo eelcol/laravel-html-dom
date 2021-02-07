@@ -58,18 +58,18 @@ class TestCase extends \Orchestra\Testbench\TestCase
         }
         </script>
         </head>
-        <body><div class="someDiv" data-div-item="1" data-top-level="1">
+        <body><div class="someDiv anotherClass" data-div-item="1" data-top-level="1">
             <span class="innerSpan innerSpanFirst" data-some-attribute="yes">
                 <p class="innerP" data-paragraph-element>This paragraph contains some text</p>
             </span>
         </div>
-        <div class="someDiv" data-div-item="2" data-top-level="1">
+        <div class="someDiv anotherClass" data-div-item="2" data-top-level="1">
             <span class="innerSpan">
                 <p class="innerP" data-paragraph-element>This paragraph contains some text</p>
             </span>
         </div>
-        <div class="someDiv" data-top-level="1">
-            <span class="innerSpan">
+        <div class="someDiv anotherClass anotherDivClassLast" data-top-level="1">
+            <span class="innerSpan anotherClass">
                 <p class="innerP" data-paragraph-element>This last paragraph contains another text</p>
             </span>
         </div>
