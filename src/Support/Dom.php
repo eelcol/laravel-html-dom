@@ -86,13 +86,7 @@ class Dom
             $concatString .= "contains(concat(' ', normalize-space(@class), ' '), ' ".$className." ')";
         }
 
-		if (is_null($searchIn)) {
-			// search in the current DOM
-			return $this->query("//".$element."[".$concatString."]");
-	    }
-
-    	// Search in another DomNode
-    	return $this->query(".//".$element."[".$concatString."]", $searchIn);
+    	return $this->query("//".$element."[".$concatString."]", $searchIn);
     }
 
     /**
