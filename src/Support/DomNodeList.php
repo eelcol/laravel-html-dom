@@ -5,6 +5,7 @@ namespace Eelcol\LaravelHtmlDom\Support;
 use ArrayAccess;
 use DOMElement as DOMElementCore;
 use DOMNodeList as DOMNodeListCore;
+use Eelcol\LaravelHtmlDom\Support\Dom;
 use Eelcol\LaravelHtmlDom\Support\DomElement;
 use Eelcol\LaravelHtmlDom\Support\DomNodeList;
 use Iterator;
@@ -14,17 +15,22 @@ class DomNodeList implements Iterator, ArrayAccess
     /**
     * @var array<DOMNodeListCore>
     */
-	protected array $nodeLists = [];
-	protected array $nodeListArray;
+    protected array $nodeLists = [];
 
-	public function __construct(DOMNodeListCore $nodeList)
-	{
-		$this->nodeLists[] 	 = $nodeList;
+    protected Dom $domDocument;
+    
+    protected array $nodeListArray;
+
+    public function __construct(DOMNodeListCore $nodeList, Dom $domDocument)
+    {
+        $this->nodeLists[]   = $nodeList;
+
+        $this->domDocument = $domDocument;
 
         // convert the nodelist to an array
         // for easier access with the ArrayAccess and Iterator functionalities
-		$this->nodeListArray = iterator_to_array($nodeList);
-	}
+        $this->nodeListArray = iterator_to_array($nodeList);
+    }
 
     public function merge(DOMNodeListCore $nodeList)
     {
@@ -60,7 +66,7 @@ class DomNodeList implements Iterator, ArrayAccess
             $nodeList = $callback(new DomElement($node))->getNodeList();
 
             if (!isset($list_to_return)) {
-                $list_to_return = new self($nodeList);
+                $list_to_return = new self($nodeList, $this->dom);
             } else {
                 $list_to_return->merge($nodeList);
             }
@@ -74,18 +80,18 @@ class DomNodeList implements Iterator, ArrayAccess
         return $this->nodeLists[0];
     }
 
-	public function first()
-	{
-		if(count($this->nodeListArray) == 0) return NULL;
+    public function first()
+    {
+        if(count($this->nodeListArray) == 0) return NULL;
 
-		return new DomElement($this->nodeListArray[0]);
-	}
+        return new DomElement($this->nodeListArray[0], $this->domDocument);
+    }
 
     public function last()
     {
         if(count($this->nodeListArray) == 0) return NULL;
 
-        return new DomElement($this->nodeListArray[ count($this->nodeListArray) - 1 ]);
+        return new DomElement($this->nodeListArray[ count($this->nodeListArray) - 1 ], $this->domDocument);
     }
 
     public function count(): int
@@ -99,7 +105,7 @@ class DomNodeList implements Iterator, ArrayAccess
             return null;
         }
 
-        return new DomElement($this->nodeListArray[$index]);
+        return new DomElement($this->nodeListArray[$index], $this->domDocument);
     }
 
     public function offsetExists($offset): bool
@@ -110,7 +116,7 @@ class DomNodeList implements Iterator, ArrayAccess
     public function offsetGet($offset)
     {
         if (isset($this->nodeListArray[$offset])) {
-            return new DomElement($this->nodeListArray[$offset]);
+            return new DomElement($this->nodeListArray[$offset], $this->domDocument);
         }
 
         return null;
@@ -126,10 +132,10 @@ class DomNodeList implements Iterator, ArrayAccess
         // not possible
     }
 
-	/**
-	* Iterator functions
-	*/
-	public function rewind()
+    /**
+    * Iterator functions
+    */
+    public function rewind()
     {
         reset($this->nodeListArray);
     }
@@ -137,7 +143,7 @@ class DomNodeList implements Iterator, ArrayAccess
     public function current()
     {
         $var = current($this->nodeListArray);
-        return new DomElement($var);
+        return new DomElement($var, $this->domDocument);
     }
   
     public function key() 

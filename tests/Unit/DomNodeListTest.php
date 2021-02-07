@@ -26,7 +26,7 @@ class DomNodeListTest extends TestCase
 		$element = $search->first();
 		$html = $element->getHtml();
 
-		$this->assertStringContainsString('<div class="someDiv" data-div-item="1" data-top-level="1">', $html);
+		$this->assertStringContainsString('<div class="someDiv anotherClass" data-div-item="1" data-top-level="1">', $html);
 		$this->assertStringContainsString('<span class="innerSpan innerSpanFirst" data-some-attribute="yes">', $html);
 		$this->assertStringContainsString('<p class="innerP" data-paragraph-element>This paragraph contains some text</p>', $html);
 	}
@@ -48,7 +48,7 @@ class DomNodeListTest extends TestCase
 		$element = $search->item(0);
 		$html = $element->getHtml();
 
-		$this->assertStringContainsString('<div class="someDiv" data-div-item="1" data-top-level="1">', $html);
+		$this->assertStringContainsString('<div class="someDiv anotherClass" data-div-item="1" data-top-level="1">', $html);
 		$this->assertStringContainsString('<span class="innerSpan innerSpanFirst" data-some-attribute="yes">', $html);
 		$this->assertStringContainsString('<p class="innerP" data-paragraph-element>This paragraph contains some text</p>', $html);
 

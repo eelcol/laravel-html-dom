@@ -27,7 +27,7 @@ class DomElementTest extends TestCase
 		$this->assertTrue(is_a($search, DomElement::class));
 
 		$this->assertStringContainsString('<body>', $search->getHtml());
-		$this->assertStringContainsString('<div class="someDiv" data-div-item="1" data-top-level="1">', $search->getHtml());
+		$this->assertStringContainsString('<div class="someDiv anotherClass" data-div-item="1" data-top-level="1">', $search->getHtml());
 	}
 
 	/** @test */
@@ -36,7 +36,7 @@ class DomElementTest extends TestCase
 		$search = $this->dom->getElementsByTagName('body')->first();
 
 		$this->assertStringNotContainsString('<body>', $search->getInnerHtml());
-		$this->assertStringContainsString('<div class="someDiv" data-div-item="1" data-top-level="1">', $search->getInnerHtml());
+		$this->assertStringContainsString('<div class="someDiv anotherClass" data-div-item="1" data-top-level="1">', $search->getInnerHtml());
 	}
 
 	/** @test */

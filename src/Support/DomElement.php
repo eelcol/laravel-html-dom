@@ -6,24 +6,37 @@ use DOMDocument;
 use DOMElement as DOMElementCore;
 use DOMNodeList as DOMNodeListCore;
 use DOMXPath;
-use Eelcol\LaravelHtmlDom\Facades\Dom;
+use Eelcol\LaravelHtmlDom\Facades\Dom as DomFacade;
+use Eelcol\LaravelHtmlDom\Support\Dom;
 use Eelcol\LaravelHtmlDom\Support\DomElement;
 use Eelcol\LaravelHtmlDom\Support\DomNodeList;
+use Eelcol\LaravelHtmlDom\Support\DomQuery;
 
 class DomElement
 {
-	private DOMElementCore $element;
+    protected DOMElementCore $element;
 
-    private DOMXPath $xpath;
+    protected Dom $domDocument;
 
-	public function __construct(DOMElementCore $element)
-	{
-		$this->element = $element;
-	}
+    protected DOMXPath $xpath;
+
+    public function __construct(DOMElementCore $element, Dom $domDocument)
+    {
+        $this->element = $element;
+
+        $this->domDocument = $domDocument;
+    }
 
     public function __get($name)
     {
-        return $this->element->{$name};
+        return $this->convert($this->element->{$name});
+    } 
+
+    public function __call($method, $params)
+    {
+        $return = call_user_func_array([$this->element, $method], $params);
+
+        return $this->convert($return);
     }
 
     public function getNode()
@@ -31,22 +44,20 @@ class DomElement
         return $this->element;
     }
 
-    public function __call($method, $params)
+    protected function convert($mixed_value)
     {
-        $return = call_user_func_array([$this->element, $method], $params);
+        if (is_object($mixed_value)) {
 
-        if (is_object($return)) {
-
-            if (is_a($return, DOMNodeListCore::class)) {
-                return new DomNodeList($return);
+            if (is_a($mixed_value, DOMNodeListCore::class)) {
+                return new DomNodeList($mixed_value, $this->domDocument);
             }
 
-            if (is_a($return, DOMElementCore::class)) {
-                return new DomElement($return);
+            if (is_a($mixed_value, DOMElementCore::class)) {
+                return new DomElement($mixed_value, $this->domDocument);
             }
         }
         
-        return $return;
+        return $mixed_value;
     }
 
     /**
@@ -92,10 +103,12 @@ class DomElement
 
     /**
     * Search other elements with a specific class
+    * @param string | array $class
+    * When supplied an array, all classes must be present
     */
-    public function searchClass(string $class, string $element = "*")
+    public function searchClass($class, string $element = "*")
     {
-        $dom    = Dom::loadHtml('<?xml encoding="utf-8" ?>' . $this->getInnerHtml());
+        $dom    = $this->createNewDom();
         $list   = $dom->searchClass($class, $element);
 
         return $list;
@@ -114,9 +127,14 @@ class DomElement
     */
     public function searchWithAttribute(string $attribute_key, string $attribute_value, string $element="*")
     {
-        $dom    = Dom::loadHtml('<?xml encoding="utf-8" ?>' . $this->getInnerHtml());
+        $dom    = $this->createNewDom();
 
         return $dom->searchWithAttribute($attribute_key, $attribute_value, $element);
+    }
+
+    public function createNewDom(): Dom
+    {
+        return DomFacade::loadHtml('<?xml encoding="utf-8" ?>' . $this->getInnerHtml());
     }
 
     public function getParent()
@@ -127,7 +145,44 @@ class DomElement
             return null;
         }
 
-        return new DomElement($parent);
+        return new DomElement($parent, $this->domDocument);
+    }
+
+    public function removeElement()
+    {
+        $this->parentNode->removeChild($this->getNode());
+    }
+
+    /**
+    * Remove the outer element
+    * But keep the children
+    */
+    public function removeOuterElement()
+    {
+        $node = $this->getNode();
+        
+        while ($node->hasChildNodes()) {
+            $child = $node->removeChild($node->firstChild);
+            $node->parentNode->insertBefore($child, $node);
+        }
+
+        // Remove the tag.
+        $node->parentNode->removeChild($node);
+    }
+
+    public function removeEmptyTags(string $element)
+    {
+        foreach ($this->searchElements($element) as $elem) {
+            if($elem->childNodes->count() == 0 && $elem->nodeValue() == "") {
+                // the element is empty
+                $elem->removeElement();
+            }
+        }
+    }
+
+    public function query()
+    {
+        return (new DomQuery())->setDom($this->domDocument)->setNode($this);
     }
 
 }

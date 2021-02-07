@@ -3,12 +3,13 @@
 namespace Eelcol\LaravelHtmlDom\Support;
 
 use DOMDocument;
+use DOMElement as DOMElementCore;
 use DOMNode;
 use DOMNodeList as DOMNodeListCore;
-use DOMElement as DOMElementCore;
 use DOMXPath;
 use Eelcol\LaravelHtmlDom\Support\DomElement;
 use Eelcol\LaravelHtmlDom\Support\DomNodeList;
+use Eelcol\LaravelHtmlDom\Support\DomQuery;
 
 class Dom
 {
@@ -69,20 +70,29 @@ class Dom
 
 	/**
 	* Search elements with a class
-	* @param string $class
+	* @param string | array $class : when an array of classes is given, search for elements containing all classes
 	* @param string $element (div, p, etc.)
 	* @param \DOMNode $searchIn
 	* @return DomNodeList
 	*/
-	public function searchClass(string $class, string $element="*", DOMNode $searchIn = NULL)
+	public function searchClass($class, string $element="*", DOMNode $searchIn = NULL)
 	{
+        // first build the concat string
+        $concatString = "";
+        foreach ((array) $class as $className) {
+            if ($concatString != "") {
+                $concatString .= " and ";
+            }
+            $concatString .= "contains(concat(' ', normalize-space(@class), ' '), ' ".$className." ')";
+        }
+
 		if (is_null($searchIn)) {
 			// search in the current DOM
-			return $this->query("//".$element."[contains(concat(' ', normalize-space(@class), ' '), ' $class ')]");
+			return $this->query("//".$element."[".$concatString."]");
 	    }
 
     	// Search in another DomNode
-    	return $this->query(".//".$element."[contains(concat(' ', normalize-space(@class), ' '), ' $class ')]", $searchIn);
+    	return $this->query(".//".$element."[".$concatString."]", $searchIn);
     }
 
     /**
@@ -174,16 +184,27 @@ class Dom
     }
 
     /**
-    * @param string $expression
+    * @param string | null $expression
     * @param DOMNode | null $contextnode
+    * @return DomQuery | DomNodeList
+    *
+    * When no expression is given, return a new DomQuery object
     */
-    public function query(string $expression, DOMNode $contextnode = null)
+    public function query(?string $expression = null, DOMNode $contextnode = null)
     {
+    	if (is_null($expression)) {
+        	return (new DomQuery())->setDom($this);
+    	}
+
     	$this->requireXpath();
+
+        if ($contextnode && substr($expression, 0, 1) != ".") {
+            $expression = "." . $expression;
+        }
 
     	$results = $this->xpath->query($expression, $contextnode);
 
-	    return new DomNodeList($results);
+	    return new DomNodeList($results, $this);
     }
 
     protected function requireXpath()
