@@ -108,6 +108,20 @@ class DomNodeList implements Iterator, ArrayAccess
         return new DomElement($this->nodeListArray[$index], $this->domDocument);
     }
 
+    public function removeElements()
+    {
+        foreach ($this as $el) {
+            $el->removeElement();
+        }
+    }
+
+    public function removeOuterElements()
+    {
+        foreach ($this as $el) {
+            $el->removeOuterElement();
+        }
+    }
+
     public function offsetExists($offset): bool
     {
         return isset($this->nodeListArray[$offset]);
