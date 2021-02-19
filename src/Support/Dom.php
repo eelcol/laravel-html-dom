@@ -52,11 +52,11 @@ class Dom
         if (is_object($return)) {
 
         	if (is_a($return, DOMNodeListCore::class)) {
-        		return new DomNodeList($return);
+        		return new DomNodeList($return, $this);
         	}
 
         	if (is_a($return, DOMElementCore::class)) {
-        		return new DomElement($return);
+        		return new DomElement($return, $this);
         	}
         }
 
