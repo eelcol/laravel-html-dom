@@ -43,6 +43,25 @@ $dom->query()
 	->get();
 ```
 
+- Perform an XPath query on the document:
+```
+$dom->query("a[...]");
+```
+
+- Perform an XPath query on an element:
+```
+$elements = $dom->getElementsByTagName("a");
+$element = $elements->first();
+
+$element->xpath("....");
+```
+
+- Get the next sibling
+```
+$element->getNextSibling();
+$element->getNextSibling("span");
+```
+
 # Installation
 
 Require this package with composer.

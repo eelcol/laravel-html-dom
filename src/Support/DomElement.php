@@ -5,7 +5,6 @@ namespace Eelcol\LaravelHtmlDom\Support;
 use DOMDocument;
 use DOMElement as DOMElementCore;
 use DOMNodeList as DOMNodeListCore;
-use DOMXPath;
 use Eelcol\LaravelHtmlDom\Facades\Dom as DomFacade;
 use Eelcol\LaravelHtmlDom\Support\Dom;
 use Eelcol\LaravelHtmlDom\Support\DomElement;
@@ -17,8 +16,6 @@ class DomElement
     protected DOMElementCore $element;
 
     protected Dom $domDocument;
-
-    protected DOMXPath $xpath;
 
     public function __construct(DOMElementCore $element, Dom $domDocument)
     {
@@ -39,25 +36,24 @@ class DomElement
         return $this->convert($return);
     }
 
+    // perform an xpath expression on the current node
+    public function xpath(string $expression)
+    {
+        return $this->domDocument->query($expression, $this->getNode());
+    }
+
     public function getNode()
     {
         return $this->element;
     }
 
-    protected function convert($mixed_value)
+    public function getNextSibling($tag = null)
     {
-        if (is_object($mixed_value)) {
-
-            if (is_a($mixed_value, DOMNodeListCore::class)) {
-                return new DomNodeList($mixed_value, $this->domDocument);
-            }
-
-            if (is_a($mixed_value, DOMElementCore::class)) {
-                return new DomElement($mixed_value, $this->domDocument);
-            }
+        if (is_null($tag)) {
+            $tag = "node()";
         }
         
-        return $mixed_value;
+        return $this->xpath("./following-sibling::".$tag."[1]")->first();
     }
 
     /**
@@ -185,4 +181,19 @@ class DomElement
         return (new DomQuery())->setDom($this->domDocument)->setNode($this);
     }
 
+    protected function convert($mixed_value)
+    {
+        if (is_object($mixed_value)) {
+
+            if (is_a($mixed_value, DOMNodeListCore::class)) {
+                return new DomNodeList($mixed_value, $this->domDocument);
+            }
+
+            if (is_a($mixed_value, DOMElementCore::class)) {
+                return new DomElement($mixed_value, $this->domDocument);
+            }
+        }
+        
+        return $mixed_value;
+    }
 }
