@@ -52,6 +52,10 @@ class DomNodeList implements Iterator, ArrayAccess
         });
     }
 
+    /**
+    * Return all elements WITHIN this result list which has this class
+    * So it does NOT search the top-level elements
+    */
     public function searchClass(string $class, string $element="*")
     {
         return $this->createNewNodeList(function ($node) use ($class, $element) {
@@ -59,14 +63,24 @@ class DomNodeList implements Iterator, ArrayAccess
         });
     }
 
+    /**
+    * Return all top-level elements which has this class
+    */
+    public function hasClass(string $class)
+    {
+        return $this->filter(function ($node) use ($class) {
+            return $node->hasClass($class);
+        });
+    }
+
     private function createNewNodeList($callback)
     {
         $list_to_return;
         foreach ($this->nodeListArray as $node) {
-            $nodeList = $callback(new DomElement($node))->getNodeList();
+            $nodeList = $callback(new DomElement($node, $this->domDocument))->getNodeList();
 
             if (!isset($list_to_return)) {
-                $list_to_return = new self($nodeList, $this->dom);
+                $list_to_return = new self($nodeList, $this->domDocument);
             } else {
                 $list_to_return->merge($nodeList);
             }
@@ -78,6 +92,24 @@ class DomNodeList implements Iterator, ArrayAccess
     public function getNodeList()
     {
         return $this->nodeLists[0];
+    }
+
+    public function filter($callback)
+    {
+        $return = new self($this->getNodeList(), $this->domDocument);
+        $unsetItems = [];
+
+        foreach ($this->nodeListArray as $index => $node) {
+            $filter = $callback(new DomElement($node, $this->domDocument));
+
+            if ($filter !== true) {
+                $unsetItems[] = $index;
+            }
+        }
+
+        $return->unsetItems($unsetItems);
+
+        return $return;
     }
 
     public function first()
@@ -106,6 +138,25 @@ class DomNodeList implements Iterator, ArrayAccess
         }
 
         return new DomElement($this->nodeListArray[$index], $this->domDocument);
+    }
+
+    public function unsetItem(int $index)
+    {
+        if (isset($this->nodeListArray[$index])) {
+            unset($this->nodeListArray[$index]);
+            $this->nodeListArray = array_values($this->nodeListArray);
+        }
+    }
+
+    public function unsetItems(array $indexes)
+    {
+        foreach ($indexes as $index) {
+            if (isset($this->nodeListArray[$index])) {
+                unset($this->nodeListArray[$index]);
+            }
+        }
+
+        $this->nodeListArray = array_values($this->nodeListArray);
     }
 
     public function removeElements()
