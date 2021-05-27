@@ -141,6 +141,10 @@ class DomElement
             return null;
         }
 
+        if (is_a($parent, DomElement::class)) {
+            return new DomElement($parent->getNode(), $this->domDocument);
+        }
+
         return new DomElement($parent, $this->domDocument);
     }
 
