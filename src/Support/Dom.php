@@ -7,9 +7,6 @@ use DOMElement as DOMElementCore;
 use DOMNode;
 use DOMNodeList as DOMNodeListCore;
 use DOMXPath;
-use Eelcol\LaravelHtmlDom\Support\DomElement;
-use Eelcol\LaravelHtmlDom\Support\DomNodeList;
-use Eelcol\LaravelHtmlDom\Support\DomQuery;
 
 class Dom
 {
@@ -22,9 +19,9 @@ class Dom
 	* Set the HTML to use
 	*
 	* @param string $html
-	* @return this
+	* @return self
 	*/
-	public function setHtml(string $html)
+	public function setHtml(string $html): self
 	{
 		$this->dom = new DOMDocument;
 		libxml_use_internal_errors(true);
@@ -72,7 +69,7 @@ class Dom
 	* Search elements with a class
 	* @param string | array $class : when an array of classes is given, search for elements containing all classes
 	* @param string $element (div, p, etc.)
-	* @param \DOMNode $searchIn
+	* @param DOMNode $searchIn
 	* @return DomNodeList
 	*/
 	public function searchClass($class, string $element="*", DOMNode $searchIn = NULL)

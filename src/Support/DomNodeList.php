@@ -3,11 +3,7 @@
 namespace Eelcol\LaravelHtmlDom\Support;
 
 use ArrayAccess;
-use DOMElement as DOMElementCore;
 use DOMNodeList as DOMNodeListCore;
-use Eelcol\LaravelHtmlDom\Support\Dom;
-use Eelcol\LaravelHtmlDom\Support\DomElement;
-use Eelcol\LaravelHtmlDom\Support\DomNodeList;
 use Iterator;
 
 class DomNodeList implements Iterator, ArrayAccess
@@ -131,7 +127,7 @@ class DomNodeList implements Iterator, ArrayAccess
         return count($this->nodeListArray);
     }
 
-    public function item($index)
+    public function item($index): ?DomElement
     {
         if (!isset($this->nodeListArray[$index])) {
             return null;
@@ -178,6 +174,7 @@ class DomNodeList implements Iterator, ArrayAccess
         return isset($this->nodeListArray[$offset]);
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         if (isset($this->nodeListArray[$offset])) {
@@ -187,11 +184,13 @@ class DomNodeList implements Iterator, ArrayAccess
         return null;
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         // not possible
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         // not possible
@@ -200,29 +199,33 @@ class DomNodeList implements Iterator, ArrayAccess
     /**
     * Iterator functions
     */
+    #[\ReturnTypeWillChange]
     public function rewind()
     {
         reset($this->nodeListArray);
     }
-  
+
+    #[\ReturnTypeWillChange]
     public function current()
     {
         $var = current($this->nodeListArray);
         return new DomElement($var, $this->domDocument);
     }
-  
+
+    #[\ReturnTypeWillChange]
     public function key() 
     {
-        $var = key($this->nodeListArray);
-        return $var;
+        return key($this->nodeListArray);
     }
-  
+
+    #[\ReturnTypeWillChange]
     public function next() 
     {
         $var = next($this->nodeListArray);
         return $var;
     }
-  
+
+    #[\ReturnTypeWillChange]
     public function valid()
     {
         $key = key($this->nodeListArray);
