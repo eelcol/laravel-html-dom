@@ -128,6 +128,16 @@ class DomElement
         return $dom->searchWithAttribute($attribute_key, $attribute_value, $element);
     }
 
+    /**
+     * Search elements which have a specific attribute key
+     */
+    public function searchHasAttribute(string $attribute_key, string $element="*")
+    {
+        $dom    = $this->createNewDom();
+
+        return $dom->searchHasAttribute($attribute_key, $element);
+    }
+
     public function createNewDom(): Dom
     {
         return DomFacade::loadHtml('<?xml encoding="utf-8" ?>' . $this->getInnerHtml());
