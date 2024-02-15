@@ -1,0 +1,17 @@
+Install composer dependencies for tests:
+
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -v "$(pwd):/var/www/html" \
+    -w /var/www/html \
+    laravelsail/php80-composer:latest \
+	composer update
+
+Run tests:
+
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -v "$(pwd):/var/www/html" \
+    -w /var/www/html \
+    laravelsail/php80-composer:latest \
+	./vendor/bin/phpunit --filter=it_should_search_tags

@@ -3,32 +3,35 @@
 namespace Eelcol\LaravelHtmlDom\Support;
 
 use ArrayAccess;
-use DOMNodeList as DOMNodeListCore;
+use Closure;
+use DOMNodeList;
 use Iterator;
 
-class DomNodeList implements Iterator, ArrayAccess
+class SuperDomList implements Iterator, ArrayAccess
 {
     /**
-    * @var array<DOMNodeListCore>
+    * @var array<DOMNodeList>
     */
     protected array $nodeLists = [];
 
-    protected Dom $domDocument;
+    protected SuperDom $domDocument;
     
-    protected array $nodeListArray;
+    protected array $nodeListArray = [];
 
-    public function __construct(DOMNodeListCore $nodeList, Dom $domDocument)
+    public function __construct(SuperDom $domDocument, ?DOMNodeList $nodeList = null)
     {
-        $this->nodeLists[]   = $nodeList;
-
         $this->domDocument = $domDocument;
 
-        // convert the nodelist to an array
-        // for easier access with the ArrayAccess and Iterator functionalities
-        $this->nodeListArray = iterator_to_array($nodeList);
+        if ($nodeList) {
+            $this->nodeLists[] = $nodeList;
+
+            // convert the nodelist to an array
+            // for easier access with the ArrayAccess and Iterator functionalities
+            $this->nodeListArray = iterator_to_array($nodeList);
+        }
     }
 
-    public function merge(DOMNodeListCore $nodeList)
+    public function merge(DOMNodeList $nodeList): void
     {
         $this->nodeLists[]   = $nodeList;
 
@@ -37,14 +40,10 @@ class DomNodeList implements Iterator, ArrayAccess
         $this->nodeListArray = array_merge($this->nodeListArray, iterator_to_array($nodeList));
     }
 
-    /**
-    * Return all elements by tag name from the list of elements
-    * @return DomNodeList
-    */
-    public function getElementsByTagName(string $tag)
+    public function getElementsByTagName(string $tag): self
     {
-        return $this->createNewNodeList(function ($node) use ($tag) {
-            return $node->searchElements($tag);
+        return $this->createNewNodeList(function (SuperDomElement $node) use ($tag) {
+            return $node->getElementsByTagName($tag);
         });
     }
 
@@ -52,51 +51,47 @@ class DomNodeList implements Iterator, ArrayAccess
     * Return all elements WITHIN this result list which has this class
     * So it does NOT search the top-level elements
     */
-    public function searchClass(string $class, string $element="*")
+    public function getElementsByClassName(string $class, string $element="*"): self
     {
-        return $this->createNewNodeList(function ($node) use ($class, $element) {
-            return $node->searchClass($class, $element);
+        return $this->createNewNodeList(function (SuperDomElement $node) use ($class, $element) {
+            return $node->getElementsByClassName($class, $element);
         });
     }
 
     /**
     * Return all top-level elements which has this class
     */
-    public function hasClass(string $class)
+    public function hasClass(string $class): self
     {
-        return $this->filter(function ($node) use ($class) {
+        return $this->filter(function (SuperDomElement $node) use ($class) {
             return $node->hasClass($class);
         });
     }
 
-    private function createNewNodeList($callback)
+    private function createNewNodeList(Closure $callback): SuperDomList
     {
-        $list_to_return;
+        $list_to_return = new self($this->domDocument, null);
         foreach ($this->nodeListArray as $node) {
-            $nodeList = $callback(new DomElement($node, $this->domDocument))->getNodeList();
+            $nodeList = $callback(new SuperDomElement($node, $this->domDocument))->getFirstNodeList();
 
-            if (!isset($list_to_return)) {
-                $list_to_return = new self($nodeList, $this->domDocument);
-            } else {
-                $list_to_return->merge($nodeList);
-            }
+            $list_to_return->merge($nodeList);
         }
 
         return $list_to_return;
     }
 
-    public function getNodeList()
+    public function getFirstNodeList()
     {
         return $this->nodeLists[0];
     }
 
-    public function filter($callback)
+    public function filter($callback): self
     {
-        $return = new self($this->getNodeList(), $this->domDocument);
+        $return = (clone $this);
         $unsetItems = [];
 
         foreach ($this->nodeListArray as $index => $node) {
-            $filter = $callback(new DomElement($node, $this->domDocument));
+            $filter = $callback(new SuperDomElement($node, $this->domDocument));
 
             if ($filter !== true) {
                 $unsetItems[] = $index;
@@ -108,18 +103,18 @@ class DomNodeList implements Iterator, ArrayAccess
         return $return;
     }
 
-    public function first()
+    public function first(): ?SuperDomElement
     {
-        if(count($this->nodeListArray) == 0) return NULL;
+        if(count($this->nodeListArray) == 0) return null;
 
-        return new DomElement($this->nodeListArray[0], $this->domDocument);
+        return new SuperDomElement($this->nodeListArray[0], $this->domDocument);
     }
 
-    public function last()
+    public function last(): ?SuperDomElement
     {
-        if(count($this->nodeListArray) == 0) return NULL;
+        if(count($this->nodeListArray) == 0) return null;
 
-        return new DomElement($this->nodeListArray[ count($this->nodeListArray) - 1 ], $this->domDocument);
+        return new SuperDomElement($this->nodeListArray[ count($this->nodeListArray) - 1 ], $this->domDocument);
     }
 
     public function count(): int
@@ -127,13 +122,13 @@ class DomNodeList implements Iterator, ArrayAccess
         return count($this->nodeListArray);
     }
 
-    public function item($index): ?DomElement
+    public function item($index): ?SuperDomElement
     {
         if (!isset($this->nodeListArray[$index])) {
             return null;
         }
 
-        return new DomElement($this->nodeListArray[$index], $this->domDocument);
+        return new SuperDomElement($this->nodeListArray[$index], $this->domDocument);
     }
 
     public function unsetItem(int $index)
@@ -178,7 +173,7 @@ class DomNodeList implements Iterator, ArrayAccess
     public function offsetGet($offset)
     {
         if (isset($this->nodeListArray[$offset])) {
-            return new DomElement($this->nodeListArray[$offset], $this->domDocument);
+            return new SuperDomElement($this->nodeListArray[$offset], $this->domDocument);
         }
 
         return null;
@@ -199,17 +194,15 @@ class DomNodeList implements Iterator, ArrayAccess
     /**
     * Iterator functions
     */
-    #[\ReturnTypeWillChange]
-    public function rewind()
+    public function rewind(): void
     {
         reset($this->nodeListArray);
     }
 
-    #[\ReturnTypeWillChange]
-    public function current()
+    public function current(): SuperDomElement
     {
         $var = current($this->nodeListArray);
-        return new DomElement($var, $this->domDocument);
+        return new SuperDomElement($var, $this->domDocument);
     }
 
     #[\ReturnTypeWillChange]
@@ -225,8 +218,7 @@ class DomNodeList implements Iterator, ArrayAccess
         return $var;
     }
 
-    #[\ReturnTypeWillChange]
-    public function valid()
+    public function valid(): bool
     {
         $key = key($this->nodeListArray);
         $var = ($key !== NULL && $key !== FALSE);

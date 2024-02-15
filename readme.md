@@ -7,14 +7,14 @@ A Laravel wrapper around the `Dom` classes of PHP.
 - Load HTML:
 
 ```
-$dom = Dom::loadHtml('<html-string>');
+$dom = SuperDom::loadHtml('<html-string>');
 ```
 
-- Search class
+- Search elements by class
 
 ```
-$dom->searchClass('class', 'element');
-$dom->searchClass(['class1','class2'], 'element');
+$dom->getElementsByClassname('class', 'element');
+$dom->getElementsByClassname(['class1','class2'], 'element');
 ```
 
 - Perform a query
@@ -67,5 +67,5 @@ $element->getNextSibling("span");
 Require this package with composer.
 
 ````
-composer require eelcol/laravel-html-dom
+composer require eelcol/laravel-html-dom:^2.0
 ````

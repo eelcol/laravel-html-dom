@@ -2,16 +2,14 @@
 
 namespace Eelcol\LaravelHtmlDom\Support;
 
-use DOMElement as DOMElementCore;
+use DOMElement;
 use DOMXPath;
-use Eelcol\LaravelHtmlDom\Support\Dom;
-use Eelcol\LaravelHtmlDom\Support\DomElement;
 
-class DomQuery
+class SuperDomQuery
 {
-	protected Dom $dom;
+	protected SuperDom $dom;
 
-	protected ?DOMElementCore $node = null;
+	protected ?SuperDomElement $node = null;
 
 	protected array $search = [];
 
@@ -23,28 +21,28 @@ class DomQuery
 
 	protected bool $is_build = false;
 
-	public function setDom(Dom $dom)
+	public function setDom(SuperDom $dom): self
 	{
 		$this->dom = $dom;
 
 		return $this;
 	}
 
-	public function setNode(DomElement $element)
+	public function setNode(SuperDomElement $element): self
 	{
-		$this->node = $element->getNode();
+		$this->node = $element;
 
 		return $this;
 	}
 
-	public function element(string $element)
+	public function element(string $element): self
 	{
 		$this->element = $element;
 
 		return $this;
 	}
 
-	public function class(string $classname)
+	public function class(string $classname): self
 	{
 		$this->search[] = [
 			'type' => 'class',
@@ -54,7 +52,7 @@ class DomQuery
 		return $this;
 	}
 
-	public function or($callback)
+	public function or($callback): self
 	{
 		$newQuery = new self();
 
@@ -68,26 +66,30 @@ class DomQuery
 	/**
 	* Create the Xpath query string
 	*/
-	public function get()
+	public function get(): SuperDomList
 	{
         $this->buildSearchString();
 
-        return $this->dom->query($this->getSearchString(), $this->node);
+        if ($this->node) {
+            return $this->dom->queryInNode($this->getSearchString(), $this->node);
+        }
+
+        return $this->dom->query($this->getSearchString());
     }
 
-    public function first()
+    public function first(): SuperDomElement
     {
     	return $this->get()->first();
     }
 
-    public function dd()
+    public function dd(): void
     {
     	$this->buildSearchString();
 
         dd($this->searchString);
     }
 
-    public function getSearchString()
+    public function getSearchString(): string
     {
     	if (!$this->is_build) {
     		$this->buildSearchString();
@@ -96,7 +98,8 @@ class DomQuery
     	return $this->searchString;
     }
 
-    protected function addGroup($callback) {
+    protected function addGroup($callback): void
+    {
     	if ($this->searchString !== "") {
     		$this->searchString .= " and ";
     	}
@@ -104,7 +107,7 @@ class DomQuery
     	$callback->call($this);
     }
 
-    protected function buildSearchString()
+    protected function buildSearchString(): void
     {
     	foreach ($this->search as $search) {
         	$method_name = 'build' . ucfirst($search['type']);
@@ -132,7 +135,7 @@ class DomQuery
         $this->is_build = true;
     }
 
-    protected function buildClass($search)
+    protected function buildClass($search): void
     {
 		$this->searchString .= "contains(concat(' ', normalize-space(@class), ' '), ' ".$search['classname']." ')";
 

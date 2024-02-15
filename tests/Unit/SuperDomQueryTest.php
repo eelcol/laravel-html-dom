@@ -1,14 +1,14 @@
 <?php
 
-namespace Eelcol\LaravelHtmlDom\Tests\Feature;
+namespace Eelcol\LaravelHtmlDom\Tests\Unit;
 
-use Eelcol\LaravelHtmlDom\Support\Dom;
+use Eelcol\LaravelHtmlDom\Support\SuperDom;
 use Eelcol\LaravelHtmlDom\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class DomQueryTest extends TestCase
+class SuperDomQueryTest extends TestCase
 {
-	public Dom $dom;
+	public SuperDom $dom;
 
 	public function setUp(): void
 	{
@@ -16,7 +16,7 @@ class DomQueryTest extends TestCase
 
 		$html = $this->getHtml();
 
-		$this->dom = \Eelcol\LaravelHtmlDom\Facades\Dom::loadHtml($html);
+		$this->dom = \Eelcol\LaravelHtmlDom\Facades\SuperDom::loadHtml($html);
 	}
 
 	/** @test */
@@ -27,20 +27,20 @@ class DomQueryTest extends TestCase
 			->class("someDiv")
 			->get();
 
-		$this->assertEquals($query->count(), 3);
+		$this->assertEquals(3, $query->count());
 
 		$query = $this->dom->query()
 			->element("div")
 			->class("anotherClass")
 			->get();
 
-		$this->assertEquals($query->count(), 3);
+		$this->assertEquals(3, $query->count());
 
 		$query = $this->dom->query()
 			->class("anotherClass")
 			->get();
 
-		$this->assertEquals($query->count(), 4);
+		$this->assertEquals(4, $query->count());
 
 		$query = $this->dom->query()
 			->element("div")
@@ -49,6 +49,6 @@ class DomQueryTest extends TestCase
 			->class("anotherDivClassLast")
 			->get();
 
-		$this->assertEquals($query->count(), 1);
+		$this->assertEquals(1, $query->count());
 	}
 }
