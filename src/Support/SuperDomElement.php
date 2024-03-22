@@ -119,6 +119,13 @@ class SuperDomElement
         return $dom->getElementsByClassname($class, $element);
     }
 
+    public function getElementById(string $id): ?SuperDomElement
+    {
+        $dom    = $this->createNewDom();
+
+        return $dom->getElementById($id);
+    }
+
     public function getElementsByTagName(string $tag): SuperDomList
     {
         return new SuperDomList(
