@@ -107,6 +107,15 @@ class SuperDomElement
         return false;
     }
 
+    public function getClasses(): array
+    {
+        if (!$this->element->hasAttribute("class")) {
+            return [];
+        }
+
+        return array_values(array_filter(explode(" ", $this->element->getAttribute("class"))));
+    }
+
     /**
     * Search other elements with a specific class
     * @param string | array $class
